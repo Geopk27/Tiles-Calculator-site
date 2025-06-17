@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Tile Calculator</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -32,6 +32,10 @@
           <input id="tileWidth" type="number" class="w-full border p-2 rounded" placeholder="e.g. 600">
         </div>
         <div class="md:col-span-2">
+          <label class="block text-sm font-medium">Wastage Buffer (%)</label>
+          <input id="buffer" type="number" class="w-full border p-2 rounded" placeholder="e.g. 10">
+        </div>
+        <div class="md:col-span-2">
           <label class="block text-sm font-medium">Tile Layout Pattern</label>
           <select id="layoutPattern" class="w-full border p-2 rounded">
             <option value="straight">Straight</option>
@@ -41,17 +45,49 @@
           </select>
         </div>
       </div>
-      <button onclick="saveInputsBeforePreview()" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Preview Layout Plan</button>
+      <button onclick="calculateTiles()" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Calculate</button>
+    </section>
+
+    <section id="results" class="bg-gray-200 p-6 rounded-xl hidden">
+      <h2 class="text-xl font-semibold">Results</h2>
+      <p>Total Area: <span id="area" class="font-bold"></span> m²</p>
+      <p>Tiles Needed: <span id="tilesNeeded" class="font-bold"></span></p>
+      <p>With Buffer: <span id="tilesWithBuffer" class="font-bold"></span></p>
+      <button class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="saveAndGoPreview()">Preview Layout Plan</button>
     </section>
   </div>
 
   <script>
-    function saveInputsBeforePreview() {
-      localStorage.setItem('roomLength', document.getElementById('roomLength').value);
-      localStorage.setItem('roomWidth', document.getElementById('roomWidth').value);
-      localStorage.setItem('tileLength', document.getElementById('tileLength').value);
-      localStorage.setItem('tileWidth', document.getElementById('tileWidth').value);
+    function calculateTiles() {
+      const rl = parseFloat(document.getElementById('roomLength').value);
+      const rw = parseFloat(document.getElementById('roomWidth').value);
+      const tl = parseFloat(document.getElementById('tileLength').value);
+      const tw = parseFloat(document.getElementById('tileWidth').value);
+      const buffer = parseFloat(document.getElementById('buffer').value || "0");
+
+      if (isNaN(rl) || isNaN(rw) || isNaN(tl) || isNaN(tw)) {
+        alert("Please fill in all dimensions.");
+        return;
+      }
+
+      const roomArea = (rl * rw) / 1_000_000;
+      const tileArea = (tl * tw) / 1_000_000;
+      const tilesNeeded = Math.ceil(roomArea / tileArea);
+      const tilesWithBuffer = Math.ceil(tilesNeeded * (1 + buffer / 100));
+
+      document.getElementById('area').innerText = roomArea.toFixed(2);
+      document.getElementById('tilesNeeded').innerText = tilesNeeded;
+      document.getElementById('tilesWithBuffer').innerText = tilesWithBuffer;
+      document.getElementById('results').classList.remove("hidden");
+
+      localStorage.setItem('roomLength', rl);
+      localStorage.setItem('roomWidth', rw);
+      localStorage.setItem('tileLength', tl);
+      localStorage.setItem('tileWidth', tw);
       localStorage.setItem('layoutPattern', document.getElementById('layoutPattern').value);
+    }
+
+    function saveAndGoPreview() {
       window.location.href = 'layout-preview.html';
     }
   </script>
