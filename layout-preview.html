@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Tile Layout Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -21,7 +21,7 @@
         </select>
       </div>
       <div class="w-full border bg-white mb-4 flex justify-center items-center overflow-auto rounded relative">
-        <canvas id="tileCanvas" width="1000" height="700" class="bg-white"></canvas>
+        <canvas id="tileCanvas" width="800" height="500" class="bg-white border shadow"></canvas>
         <div class="absolute bottom-2 right-2 text-gray-300 text-sm font-semibold pointer-events-none">www.tilecalhub.com</div>
       </div>
       <div class="text-center space-y-2">
@@ -50,30 +50,30 @@
     }
 
     function drawCanvas() {
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-
+      const cw = canvas.width;
+      const ch = canvas.height;
       const roomLength = convert(rawRoomLength, unit);
       const roomWidth = convert(rawRoomWidth, unit);
       const tileLength = convert(rawTileLength, unit);
       const tileWidth = convert(rawTileWidth, unit);
-
-      const scaleX = canvasWidth / roomLength;
-      const scaleY = canvasHeight / roomWidth;
+      const scaleX = cw * 0.75 / roomLength;
+      const scaleY = ch * 0.75 / roomWidth;
+      const offsetX = cw * 0.125;
+      const offsetY = ch * 0.125;
       const tilesX = Math.floor(roomLength / tileLength);
       const tilesY = Math.floor(roomWidth / tileWidth);
       let tileNumber = 1;
 
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.clearRect(0, 0, cw, ch);
       ctx.strokeStyle = '#000';
-      ctx.font = '12px Arial';
+      ctx.font = '11px Arial';
       ctx.fillStyle = '#000';
 
       function drawStraight() {
         for (let y = 0; y < tilesY; y++) {
           for (let x = 0; x < tilesX; x++) {
-            const px = x * tileLength * scaleX;
-            const py = y * tileWidth * scaleY;
+            const px = offsetX + x * tileLength * scaleX;
+            const py = offsetY + y * tileWidth * scaleY;
             const w = tileLength * scaleX;
             const h = tileWidth * scaleY;
             ctx.strokeRect(px, py, w, h);
@@ -82,40 +82,86 @@
         }
       }
 
+      function drawOffset() {
+        for (let y = 0; y < tilesY; y++) {
+          const off = (y % 2) * tileLength * scaleX / 2;
+          for (let x = 0; x < tilesX; x++) {
+            const px = offsetX + x * tileLength * scaleX + off;
+            const py = offsetY + y * tileWidth * scaleY;
+            const w = tileLength * scaleX;
+            const h = tileWidth * scaleY;
+            ctx.strokeRect(px, py, w, h);
+            ctx.fillText(tileNumber++, px + w / 2 - 5, py + h / 2 + 4);
+          }
+        }
+      }
+
+      function drawDiagonal() {
+        for (let y = 0; y < tilesY; y++) {
+          for (let x = 0; x < tilesX; x++) {
+            ctx.save();
+            const px = offsetX + x * tileLength * scaleX;
+            const py = offsetY + y * tileWidth * scaleY;
+            ctx.translate(px + tileLength * scaleX / 2, py + tileWidth * scaleY / 2);
+            ctx.rotate(Math.PI / 4);
+            ctx.strokeRect(-tileLength * scaleX / 2, -tileWidth * scaleY / 2, tileLength * scaleX, tileWidth * scaleY);
+            ctx.fillText(tileNumber++, -5, 4);
+            ctx.restore();
+          }
+        }
+      }
+
+      function drawHerringbone() {
+        const tL = tileLength * scaleX, tW = tileWidth * scaleY;
+        for (let y = 0; y < tilesY; y++) {
+          for (let x = 0; x < tilesX; x++) {
+            const px = offsetX + x * tW;
+            const py = offsetY + y * tL;
+            ctx.save();
+            ctx.translate(px, py);
+            if ((x + y) % 2 === 0) {
+              ctx.rotate(Math.PI / 2);
+              ctx.strokeRect(0, 0, tL, tW);
+              ctx.fillText(tileNumber++, tL / 2 - 5, tW / 2 + 4);
+            } else {
+              ctx.strokeRect(0, 0, tW, tL);
+              ctx.fillText(tileNumber++, tW / 2 - 5, tL / 2 + 4);
+            }
+            ctx.restore();
+          }
+        }
+      }
+
       if (layoutPattern === 'straight') drawStraight();
+      else if (layoutPattern === 'offset') drawOffset();
+      else if (layoutPattern === 'diagonal') drawDiagonal();
+      else if (layoutPattern === 'herringbone') drawHerringbone();
 
-      const layoutRealWidth = roomLength / 1000;
-      const scaleRatio = Math.floor(250 / layoutRealWidth);
-      const scaleLabel = `Scale 1:${scaleRatio} (${unit})`;
-
-      ctx.font = 'bold 12px Arial';
-      ctx.fillStyle = '#333';
-      ctx.fillText(scaleLabel, 10, canvas.height - 10);
+      const scaleRatio = Math.floor(250 / (roomLength / 1000));
+      ctx.font = 'bold 11px Arial';
+      ctx.fillText(`Scale 1:${scaleRatio} (${unit})`, 10, ch - 10);
     }
 
     function downloadPDF() {
       const { jsPDF } = window.jspdf;
-      const orientation = document.getElementById("orientationSelect").value;
-      const pdf = new jsPDF(orientation, "mm", "a4");
+      const orient = document.getElementById("orientationSelect").value;
+      const pdf = new jsPDF(orient, "mm", "a4");
       const imgData = canvas.toDataURL("image/png");
-
       pdf.setFontSize(11);
-      pdf.text("Tiles Code: ____________________________", 15, 15);
-      pdf.text("Location Area: _________________________", 140, 15);
-
-      const height = 190 * (canvas.height / canvas.width);
-      pdf.addImage(imgData, "PNG", 15, 25, 277, height);
-
-      const layoutRealWidth = convert(rawRoomLength, unit) / 1000;
-      const scaleRatio = Math.floor(250 / layoutRealWidth);
+      pdf.text("Tiles Code: ______________________", 15, 15);
+      pdf.text("Location Area: ___________________", 140, 15);
+      const contentW = 210 - 30;
+      const contentH = orient === "l" ? 148 : 190;
+      const drawH = contentW * (canvas.height / canvas.width);
+      pdf.addImage(imgData, "PNG", 15, 25, contentW, drawH);
+      const scaleRatio = Math.floor(250 / (convert(rawRoomLength, unit) / 1000));
       pdf.setFontSize(10);
-      pdf.text(`Scale 1:${scaleRatio} (${unit})`, 15, 25 + height + 8);
-      pdf.text("www.tilecalhub.com", 277, 200, { align: "right" });
-
+      pdf.text(`Scale 1:${scaleRatio} (${unit})`, 15, 25 + drawH + 8);
+      pdf.text("www.tilecalhub.com", 195, 200, { align: "right" });
       pdf.save("tile-layout-plan.pdf");
     }
 
-    drawCanvas();
+    window.onload = drawCanvas;
   </script>
 </body>
 </html>
