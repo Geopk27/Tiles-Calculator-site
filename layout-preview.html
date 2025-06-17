@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tile Layout Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto p-6 space-y-6">
+    <header class="text-center">
+      <h1 class="text-2xl font-bold">Your Tile Layout Plan</h1>
+      <p class="text-gray-500">Here's how your tiles will be arranged based on your selected pattern.</p>
+    </header>
+
+    <section class="bg-white p-6 shadow rounded-xl">
+      <div class="w-full h-96 border border-dashed bg-gray-50 flex items-center justify-center rounded relative">
+        <canvas id="tileCanvas" width="600" height="400" style="background:#fff;"></canvas>
+      </div>
+      <div class="mt-6 text-center">
+        <p class="text-sm text-gray-500 mb-2">Happy with your layout?</p>
+        <button onclick="showAdAndDownload()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Download Layout Plan</button>
+        <p class="mt-4 text-xs text-gray-500 italic text-center">
+          *This layout is for reference only. Please verify dimensions and patterns with your contractor before tiling.*
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('tileCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const roomLength = parseFloat(localStorage.getItem('roomLength')) || 4000;
+    const roomWidth = parseFloat(localStorage.getItem('roomWidth')) || 3000;
+    const tileLength = parseFloat(localStorage.getItem('tileLength')) || 600;
+    const tileWidth = parseFloat(localStorage.getItem('tileWidth')) || 600;
+    const layoutPattern = localStorage.getItem("layoutPattern") || "straight";
+
+    const scaleX = canvas.width / roomLength;
+    const scaleY = canvas.height / roomWidth;
+    const tilesX = Math.floor(roomLength / tileLength);
+    const tilesY = Math.floor(roomWidth / tileWidth);
+    let tileNumber = 1;
+
+    function drawNumber(px, py, w, h) {
+      ctx.fillStyle = '#000';
+      ctx.font = '10px sans-serif';
+      ctx.fillText(tileNumber, px + w / 2 - 5, py + h / 2 + 4);
+      tileNumber++;
+    }
+
+    function drawStraight() {
+      ctx.fillStyle = '#ADD8E6';
+      ctx.strokeStyle = '#333';
+      for (let y = 0; y < tilesY; y++) {
+        for (let x = 0; x < tilesX; x++) {
+          const px = x * tileLength * scaleX;
+          const py = y * tileWidth * scaleY;
+          ctx.fillRect(px, py, tileLength * scaleX, tileWidth * scaleY);
+          ctx.strokeRect(px, py, tileLength * scaleX, tileWidth * scaleY);
+          drawNumber(px, py, tileLength * scaleX, tileWidth * scaleY);
+        }
+      }
+    }
+
+    function drawOffset() {
+      ctx.fillStyle = '#FFECB3';
+      ctx.strokeStyle = '#444';
+      for (let y = 0; y < tilesY; y++) {
+        for (let x = 0; x < tilesX; x++) {
+          const offsetX = (y % 2 === 0) ? 0 : (tileLength / 2) * scaleX;
+          const px = x * tileLength * scaleX + offsetX;
+          const py = y * tileWidth * scaleY;
+          ctx.fillRect(px, py, tileLength * scaleX, tileWidth * scaleY);
+          ctx.strokeRect(px, py, tileLength * scaleX, tileWidth * scaleY);
+          drawNumber(px, py, tileLength * scaleX, tileWidth * scaleY);
+        }
+      }
+    }
+
+    function drawDiagonal() {
+      ctx.fillStyle = '#C8E6C9';
+      ctx.strokeStyle = '#555';
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(Math.PI / 4);
+      for (let y = -tilesY; y < tilesY; y++) {
+        for (let x = -tilesX; x < tilesX; x++) {
+          const px = x * tileLength * scaleX;
+          const py = y * tileWidth * scaleY;
+          ctx.fillRect(px, py, tileLength * scaleX, tileWidth * scaleY);
+          ctx.strokeRect(px, py, tileLength * scaleX, tileWidth * scaleY);
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawHerringbone() {
+      ctx.fillStyle = '#FFCDD2';
+      ctx.strokeStyle = '#444';
+      const tL = tileLength * scaleX;
+      const tW = tileWidth * scaleY;
+      for (let y = 0; y < tilesY; y++) {
+        for (let x = 0; x < tilesX; x++) {
+          const px = x * tL;
+          const py = y * tW;
+
+          if ((x + y) % 2 === 0) {
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(Math.PI / 2);
+            ctx.fillRect(0, 0, tW, tL);
+            ctx.strokeRect(0, 0, tW, tL);
+            ctx.restore();
+          } else {
+            ctx.fillRect(px, py, tL, tW);
+            ctx.strokeRect(px, py, tL, tW);
+          }
+          drawNumber(px, py, tL, tW);
+        }
+      }
+    }
+
+    function renderLayout() {
+      tileNumber = 1;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (layoutPattern === 'straight') drawStraight();
+      else if (layoutPattern === 'offset') drawOffset();
+      else if (layoutPattern === 'diagonal') drawDiagonal();
+      else if (layoutPattern === 'herringbone') drawHerringbone();
+      else drawStraight();
+    }
+
+    renderLayout();
+
+    function showAdAndDownload() {
+      const btn = event.target;
+      btn.disabled = true;
+      btn.innerText = "Loading ads...";
+      const overlay = document.createElement('div');
+      overlay.className = "fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50";
+      overlay.innerHTML = `
+        <div class='bg-white p-6 rounded-xl text-center'>
+          <p class='text-gray-700 mb-4'>Your download will be ready after this ad.</p>
+          <div class='w-full h-32 border bg-gray-100 mb-4 flex items-center justify-center'>
+            <span class='text-gray-500'>[ Interstitial Ad ]</span>
+          </div>
+          <button onclick="startDownload(this)" class='bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700'>Close Ad & Download</button>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+
+    function startDownload(button) {
+      button.disabled = true;
+      button.innerText = "Preparing file...";
+      setTimeout(() => {
+        window.open("tile-layout-plan.pdf", "_blank");
+        document.querySelector('.fixed.inset-0').remove();
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

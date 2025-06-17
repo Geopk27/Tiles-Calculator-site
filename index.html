@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tile Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto p-6 space-y-6">
+    <header class="text-center">
+      <h1 class="text-3xl font-bold">Tile Calculator & Layout Visualizer</h1>
+      <p class="text-gray-600">Plan your tiles, visualize your layout, and avoid costly mistakes.</p>
+    </header>
+
+    <section class="bg-white shadow-md p-6 rounded-xl space-y-4">
+      <h2 class="text-xl font-semibold">Enter Your Room Details</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium">Room Length (mm)</label>
+          <input id="roomLength" type="number" class="w-full border p-2 rounded" placeholder="e.g. 4000">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Room Width (mm)</label>
+          <input id="roomWidth" type="number" class="w-full border p-2 rounded" placeholder="e.g. 3000">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Tile Length (mm)</label>
+          <input id="tileLength" type="number" class="w-full border p-2 rounded" placeholder="e.g. 600">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Tile Width (mm)</label>
+          <input id="tileWidth" type="number" class="w-full border p-2 rounded" placeholder="e.g. 600">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium">Tile Layout Pattern</label>
+          <select id="layoutPattern" class="w-full border p-2 rounded">
+            <option value="straight">Straight</option>
+            <option value="offset">Offset</option>
+            <option value="diagonal">Diagonal</option>
+            <option value="herringbone">Herringbone</option>
+          </select>
+        </div>
+      </div>
+      <button onclick="saveInputsBeforePreview()" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Preview Layout Plan</button>
+    </section>
+  </div>
+
+  <script>
+    function saveInputsBeforePreview() {
+      localStorage.setItem('roomLength', document.getElementById('roomLength').value);
+      localStorage.setItem('roomWidth', document.getElementById('roomWidth').value);
+      localStorage.setItem('tileLength', document.getElementById('tileLength').value);
+      localStorage.setItem('tileWidth', document.getElementById('tileWidth').value);
+      localStorage.setItem('layoutPattern', document.getElementById('layoutPattern').value);
+      window.location.href = 'layout-preview.html';
+    }
+  </script>
+</body>
+</html>
