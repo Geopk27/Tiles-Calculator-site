@@ -5,89 +5,97 @@
   <title>Tile Calculator</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100">
-  <div class="container mx-auto p-6 space-y-6">
-    <header class="text-center">
-      <h1 class="text-3xl font-bold">Tile Calculator & Layout Visualizer</h1>
-      <p class="text-gray-600">Plan your tiles, visualize your layout, and avoid costly mistakes.</p>
-    </header>
-
-    <section class="bg-white shadow-md p-6 rounded-xl space-y-4">
-      <h2 class="text-xl font-semibold">Enter Your Room Details</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium">Room Length (mm)</label>
-          <input id="roomLength" type="number" class="w-full border p-2 rounded" placeholder="e.g. 4000">
-        </div>
-        <div>
-          <label class="block text-sm font-medium">Room Width (mm)</label>
-          <input id="roomWidth" type="number" class="w-full border p-2 rounded" placeholder="e.g. 3000">
-        </div>
-        <div>
-          <label class="block text-sm font-medium">Tile Length (mm)</label>
-          <input id="tileLength" type="number" class="w-full border p-2 rounded" placeholder="e.g. 600">
-        </div>
-        <div>
-          <label class="block text-sm font-medium">Tile Width (mm)</label>
-          <input id="tileWidth" type="number" class="w-full border p-2 rounded" placeholder="e.g. 600">
-        </div>
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium">Wastage Buffer (%)</label>
-          <input id="buffer" type="number" class="w-full border p-2 rounded" placeholder="e.g. 10">
-        </div>
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium">Tile Layout Pattern</label>
-          <select id="layoutPattern" class="w-full border p-2 rounded">
-            <option value="straight">Straight</option>
-            <option value="offset">Offset</option>
-            <option value="diagonal">Diagonal</option>
-            <option value="herringbone">Herringbone</option>
-          </select>
-        </div>
+<body class="bg-gray-100 text-gray-800">
+  <!-- Navigation -->
+  <nav class="bg-white shadow p-4">
+    <div class="container mx-auto flex justify-between items-center">
+      <div class="text-xl font-bold">TileCalHub</div>
+      <div class="space-x-4">
+        <a href="index.html" class="hover:underline">Home</a>
+        <a href="index.html#calculator" class="hover:underline">Tile Calculator</a>
+        <a href="layout-preview.html" class="hover:underline">Layout Preview</a>
+        <a href="tile-tips/index.html" class="hover:underline">Tile Tips & Ideas</a>
       </div>
-      <button onclick="calculateTiles()" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Calculate</button>
-    </section>
+    </div>
+  </nav>
 
-    <section id="results" class="bg-gray-200 p-6 rounded-xl hidden">
-      <h2 class="text-xl font-semibold">Results</h2>
-      <p>Total Area: <span id="area" class="font-bold"></span> m²</p>
-      <p>Tiles Needed: <span id="tilesNeeded" class="font-bold"></span></p>
-      <p>With Buffer: <span id="tilesWithBuffer" class="font-bold"></span></p>
-      <button class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="saveAndGoPreview()">Preview Layout Plan</button>
-    </section>
+  <div class="flex container mx-auto py-6 space-x-4">
+    <!-- Left ad -->
+    <div class="hidden lg:block w-32">
+      <div class="bg-gray-200 h-96 flex items-center justify-center text-xs text-gray-500 rounded">[ Ad Left ]</div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 bg-white p-6 rounded shadow space-y-6">
+      <h1 class="text-2xl font-semibold">Tile Calculator</h1>
+      <section id="calculator" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div><label>Room Length (mm)</label><input type="number" id="roomLength" class="w-full p-2 border rounded"></div>
+          <div><label>Room Width (mm)</label><input type="number" id="roomWidth" class="w-full p-2 border rounded"></div>
+          <div><label>Tile Length (mm)</label><input type="number" id="tileLength" class="w-full p-2 border rounded"></div>
+          <div><label>Tile Width (mm)</label><input type="number" id="tileWidth" class="w-full p-2 border rounded"></div>
+          <div><label>Wastage Buffer (%)</label><input type="number" id="buffer" class="w-full p-2 border rounded" value="10"></div>
+          <div>
+            <label>Tile Layout Pattern</label>
+            <select id="pattern" class="w-full p-2 border rounded">
+              <option value="straight">Straight</option>
+              <option value="offset">Offset</option>
+              <option value="diagonal">Diagonal</option>
+              <option value="herringbone">Herringbone</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="calculateTiles()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Calculate</button>
+        <div id="result" class="pt-4 space-y-2 text-lg"></div>
+        <button id="previewBtn" onclick="goToPreview()" class="bg-green-600 text-white px-4 py-2 rounded hidden">Preview Layout Plan</button>
+      </section>
+    </main>
+
+    <!-- Right ad -->
+    <div class="hidden lg:block w-32">
+      <div class="bg-gray-200 h-96 flex items-center justify-center text-xs text-gray-500 rounded">[ Ad Right ]</div>
+    </div>
   </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t p-4 text-center text-sm space-y-2">
+    <div class="space-x-3">
+      <span>📧 hello@tilecalhub.com</span>
+      <span>📷 IG</span>
+      <span>📘 FB</span>
+      <span>🎵 TikTok</span>
+      <span>🍋 Lemon8</span>
+      <span>🧧 Xiaohongshu</span>
+    </div>
+    <p>© 2025 TileCalHub. All rights reserved.</p>
+  </footer>
 
   <script>
     function calculateTiles() {
-      const rl = parseFloat(document.getElementById('roomLength').value);
-      const rw = parseFloat(document.getElementById('roomWidth').value);
-      const tl = parseFloat(document.getElementById('tileLength').value);
-      const tw = parseFloat(document.getElementById('tileWidth').value);
-      const buffer = parseFloat(document.getElementById('buffer').value || "0");
+      const roomLength = parseFloat(document.getElementById('roomLength').value);
+      const roomWidth = parseFloat(document.getElementById('roomWidth').value);
+      const tileLength = parseFloat(document.getElementById('tileLength').value);
+      const tileWidth = parseFloat(document.getElementById('tileWidth').value);
+      const buffer = parseFloat(document.getElementById('buffer').value);
+      const pattern = document.getElementById('pattern').value;
 
-      if (isNaN(rl) || isNaN(rw) || isNaN(tl) || isNaN(tw)) {
-        alert("Please fill in all dimensions.");
-        return;
-      }
+      const totalTiles = Math.ceil((roomLength * roomWidth) / (tileLength * tileWidth));
+      const withBuffer = Math.ceil(totalTiles * (1 + buffer / 100));
 
-      const roomArea = (rl * rw) / 1_000_000;
-      const tileArea = (tl * tw) / 1_000_000;
-      const tilesNeeded = Math.ceil(roomArea / tileArea);
-      const tilesWithBuffer = Math.ceil(tilesNeeded * (1 + buffer / 100));
+      localStorage.setItem('roomLength', roomLength);
+      localStorage.setItem('roomWidth', roomWidth);
+      localStorage.setItem('tileLength', tileLength);
+      localStorage.setItem('tileWidth', tileWidth);
+      localStorage.setItem('layoutPattern', pattern);
 
-      document.getElementById('area').innerText = roomArea.toFixed(2);
-      document.getElementById('tilesNeeded').innerText = tilesNeeded;
-      document.getElementById('tilesWithBuffer').innerText = tilesWithBuffer;
-      document.getElementById('results').classList.remove("hidden");
-
-      localStorage.setItem('roomLength', rl);
-      localStorage.setItem('roomWidth', rw);
-      localStorage.setItem('tileLength', tl);
-      localStorage.setItem('tileWidth', tw);
-      localStorage.setItem('layoutPattern', document.getElementById('layoutPattern').value);
+      document.getElementById('result').innerHTML = `
+        <p>Total Tiles Needed: <strong>${totalTiles}</strong></p>
+        <p>With Buffer: <strong>${withBuffer}</strong></p>
+      `;
+      document.getElementById('previewBtn').classList.remove('hidden');
     }
 
-    function saveAndGoPreview() {
+    function goToPreview() {
       window.location.href = 'layout-preview.html';
     }
   </script>
