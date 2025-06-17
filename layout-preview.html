@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Tile Layout Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -66,11 +66,12 @@
       const tilesY = Math.floor(roomWidth / tileWidth);
       let tileNumber = 1;
 
-      const tileArea = tileLength * tilesX;
-      const roomOverflow = tileArea > roomLength;
+      const overflowX = tileLength * tilesX > roomLength;
+      const overflowY = tileWidth * tilesY > roomWidth;
+      const overflow = overflowX || overflowY;
 
       ctx.clearRect(0, 0, cw, ch);
-      ctx.strokeStyle = roomOverflow ? 'red' : 'black';
+      ctx.strokeStyle = overflow ? 'red' : 'black';
       ctx.strokeRect(offsetX, offsetY, roomLength * scaleX, roomWidth * scaleY);
 
       ctx.fillStyle = "#000";
@@ -86,12 +87,65 @@
             const h = tileWidth * scaleY;
             ctx.strokeStyle = "#000";
             ctx.strokeRect(px, py, w, h);
-            ctx.fillText(tileNumber++, px + w/2 - 5, py + h/2 + 4);
+            ctx.fillText(tileNumber++, px + w / 2 - 5, py + h / 2 + 4);
+          }
+        }
+      }
+
+      function drawOffset() {
+        for (let y = 0; y < tilesY; y++) {
+          const offset = (y % 2) * tileLength * scaleX / 2;
+          for (let x = 0; x < tilesX; x++) {
+            const px = offsetX + x * tileLength * scaleX + offset;
+            const py = offsetY + y * tileWidth * scaleY;
+            const w = tileLength * scaleX;
+            const h = tileWidth * scaleY;
+            ctx.strokeRect(px, py, w, h);
+            ctx.fillText(tileNumber++, px + w / 2 - 5, py + h / 2 + 4);
+          }
+        }
+      }
+
+      function drawDiagonal() {
+        for (let y = 0; y < tilesY; y++) {
+          for (let x = 0; x < tilesX; x++) {
+            ctx.save();
+            const px = offsetX + x * tileLength * scaleX;
+            const py = offsetY + y * tileWidth * scaleY;
+            ctx.translate(px + tileLength * scaleX / 2, py + tileWidth * scaleY / 2);
+            ctx.rotate(Math.PI / 4);
+            ctx.strokeRect(-tileLength * scaleX / 2, -tileWidth * scaleY / 2, tileLength * scaleX, tileWidth * scaleY);
+            ctx.fillText(tileNumber++, -5, 4);
+            ctx.restore();
+          }
+        }
+      }
+
+      function drawHerringbone() {
+        const tL = tileLength * scaleX, tW = tileWidth * scaleY;
+        for (let y = 0; y < tilesY; y++) {
+          for (let x = 0; x < tilesX; x++) {
+            const px = offsetX + x * tW;
+            const py = offsetY + y * tL;
+            ctx.save();
+            ctx.translate(px, py);
+            if ((x + y) % 2 === 0) {
+              ctx.rotate(Math.PI / 2);
+              ctx.strokeRect(0, 0, tL, tW);
+              ctx.fillText(tileNumber++, tL / 2 - 5, tW / 2 + 4);
+            } else {
+              ctx.strokeRect(0, 0, tW, tL);
+              ctx.fillText(tileNumber++, tW / 2 - 5, tL / 2 + 4);
+            }
+            ctx.restore();
           }
         }
       }
 
       if (layoutPattern === "straight") drawStraight();
+      else if (layoutPattern === "offset") drawOffset();
+      else if (layoutPattern === "diagonal") drawDiagonal();
+      else if (layoutPattern === "herringbone") drawHerringbone();
 
       const scaleRatio = Math.floor(250 / (roomLength / 1000));
       ctx.font = 'bold 11px Arial';
