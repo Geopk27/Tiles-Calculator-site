@@ -5,16 +5,30 @@
   <title>Tile Layout Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 text-gray-800">
   <div class="container mx-auto p-6 space-y-6">
     <header class="text-center">
       <h1 class="text-2xl font-bold">Your Tile Layout Plan</h1>
       <p class="text-gray-500">Tiles drawn to scale with selected layout pattern.</p>
     </header>
 
-    <section class="bg-white p-6 shadow rounded-xl">
-      <div class="w-full border bg-white mb-4 flex justify-center items-center overflow-auto rounded">
+    <section class="bg-white p-6 shadow rounded-xl space-y-4">
+      <div class="text-center space-x-4">
+        <label>PDF Orientation:</label>
+        <select id="orientationSelect" class="p-2 border rounded">
+          <option value="l">Landscape</option>
+          <option value="p">Portrait</option>
+        </select>
+        <label>Units:</label>
+        <select id="unitSelect" class="p-2 border rounded">
+          <option value="mm">mm</option>
+          <option value="cm">cm</option>
+          <option value="inch">inch</option>
+        </select>
+      </div>
+      <div class="w-full border bg-white mb-4 flex justify-center items-center overflow-auto rounded relative">
         <canvas id="tileCanvas" width="1000" height="700" class="bg-white"></canvas>
+        <div class="absolute bottom-2 right-2 text-gray-300 text-sm font-semibold pointer-events-none">www.tilecalhub.com</div>
       </div>
       <div class="text-center space-y-2">
         <p class="text-sm text-gray-600 italic">*This layout is for reference only. Please verify on-site before tile laying.</p>
@@ -28,119 +42,88 @@
     const canvas = document.getElementById('tileCanvas');
     const ctx = canvas.getContext('2d');
 
-    const roomLength = parseFloat(localStorage.getItem('roomLength')) || 4000;
-    const roomWidth = parseFloat(localStorage.getItem('roomWidth')) || 3000;
-    const tileLength = parseFloat(localStorage.getItem('tileLength')) || 600;
-    const tileWidth = parseFloat(localStorage.getItem('tileWidth')) || 600;
+    const rawRoomLength = parseFloat(localStorage.getItem('roomLength')) || 4000;
+    const rawRoomWidth = parseFloat(localStorage.getItem('roomWidth')) || 3000;
+    const rawTileLength = parseFloat(localStorage.getItem('tileLength')) || 600;
+    const rawTileWidth = parseFloat(localStorage.getItem('tileWidth')) || 600;
     const layoutPattern = localStorage.getItem('layoutPattern') || 'straight';
 
-    const scaleX = canvas.width / roomLength;
-    const scaleY = canvas.height / roomWidth;
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
 
-    const tilesX = Math.floor(roomLength / tileLength);
-    const tilesY = Math.floor(roomWidth / tileWidth);
-    let tileNumber = 1;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = '#000';
-    ctx.font = '12px Arial';
-    ctx.fillStyle = '#000';
-
-    function drawStraight() {
-      for (let y = 0; y < tilesY; y++) {
-        for (let x = 0; x < tilesX; x++) {
-          const px = x * tileLength * scaleX;
-          const py = y * tileWidth * scaleY;
-          const w = tileLength * scaleX;
-          const h = tileWidth * scaleY;
-          ctx.strokeRect(px, py, w, h);
-          ctx.fillText(tileNumber++, px + w / 2 - 5, py + h / 2 + 4);
-        }
-      }
+    function convert(value, unit) {
+      if (unit === 'cm') return value / 10;
+      if (unit === 'inch') return value / 25.4;
+      return value;
     }
 
-    function drawOffset() {
-      for (let y = 0; y < tilesY; y++) {
-        const offsetX = (y % 2) * (tileLength * scaleX / 2);
-        for (let x = 0; x < tilesX; x++) {
-          const px = x * tileLength * scaleX + offsetX;
-          const py = y * tileWidth * scaleY;
-          const w = tileLength * scaleX;
-          const h = tileWidth * scaleY;
-          ctx.strokeRect(px, py, w, h);
-          ctx.fillText(tileNumber++, px + w / 2 - 5, py + h / 2 + 4);
-        }
-      }
-    }
+    const unitSelect = document.getElementById('unitSelect');
+    const orientationSelect = document.getElementById('orientationSelect');
 
-    function drawDiagonal() {
-      const diagLength = Math.sqrt(tileLength**2 + tileWidth**2);
-      const count = Math.floor(Math.min(canvas.width, canvas.height) / (diagLength * Math.max(scaleX, scaleY)));
-      for (let i = 0; i < count; i++) {
-        const centerX = 50 + i * tileLength * scaleX * 0.7;
-        const centerY = 50 + i * tileWidth * scaleY * 0.7;
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(Math.PI / 4);
-        ctx.strokeRect(-tileLength * scaleX / 2, -tileWidth * scaleY / 2, tileLength * scaleX, tileWidth * scaleY);
-        ctx.fillText(tileNumber++, -5, 4);
-        ctx.restore();
-      }
-    }
+    function drawCanvas() {
+      const unit = unitSelect.value;
+      const roomLength = convert(rawRoomLength, unit);
+      const roomWidth = convert(rawRoomWidth, unit);
+      const tileLength = convert(rawTileLength, unit);
+      const tileWidth = convert(rawTileWidth, unit);
 
-    function drawHerringbone() {
-      const tileL = tileLength * scaleX;
-      const tileW = tileWidth * scaleY;
-      const startX = 50, startY = 50;
-      for (let y = 0; y < tilesY; y++) {
-        for (let x = 0; x < tilesX; x++) {
-          const px = startX + x * tileW;
-          const py = startY + y * tileL;
-          ctx.save();
-          ctx.translate(px, py);
-          if ((x + y) % 2 === 0) {
-            ctx.rotate(Math.PI / 2);
-            ctx.strokeRect(0, 0, tileL, tileW);
-            ctx.fillText(tileNumber++, tileL / 2 - 5, tileW / 2 + 4);
-          } else {
-            ctx.rotate(0);
-            ctx.strokeRect(0, 0, tileW, tileL);
-            ctx.fillText(tileNumber++, tileW / 2 - 5, tileL / 2 + 4);
+      const scaleX = canvasWidth / roomLength;
+      const scaleY = canvasHeight / roomWidth;
+      const tilesX = Math.floor(roomLength / tileLength);
+      const tilesY = Math.floor(roomWidth / tileWidth);
+      let tileNumber = 1;
+
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.strokeStyle = '#000';
+      ctx.font = '12px Arial';
+      ctx.fillStyle = '#000';
+
+      function drawStraight() {
+        for (let y = 0; y < tilesY; y++) {
+          for (let x = 0; x < tilesX; x++) {
+            const px = x * tileLength * scaleX;
+            const py = y * tileWidth * scaleY;
+            const w = tileLength * scaleX;
+            const h = tileWidth * scaleY;
+            ctx.strokeRect(px, py, w, h);
+            ctx.fillText(tileNumber++, px + w / 2 - 5, py + h / 2 + 4);
           }
-          ctx.restore();
         }
       }
+
+      if (layoutPattern === 'straight') drawStraight();
+      // Other patterns can be added here (offset, diagonal, etc.)
+
+      const scaleLabel = `Scale 1:${Math.floor(250 / (roomLength / 1000))} (${unit})`;
+      ctx.fillText(scaleLabel, canvasWidth - 160, canvasHeight - 10);
     }
 
-    if (layoutPattern === 'straight') drawStraight();
-    else if (layoutPattern === 'offset') drawOffset();
-    else if (layoutPattern === 'diagonal') drawDiagonal();
-    else if (layoutPattern === 'herringbone') drawHerringbone();
-
-    async function downloadPDF() {
+    function downloadPDF() {
       const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF("p", "mm", "a4");
+      const orientation = orientationSelect.value;
+      const unit = unitSelect.value;
 
-      // Draw the canvas at 75% width of A4 (max width ~150mm)
+      const pdf = new jsPDF(orientation, "mm", "a4");
       const imgData = canvas.toDataURL("image/png");
-      const width = 150;
-      const height = 150 * (canvas.height / canvas.width);
-      const marginLeft = (210 - width) / 2;
 
-      pdf.addImage(imgData, "PNG", marginLeft, 15, width, height);
-
-      // Leave room below and add fields
-      const boxY = 15 + height + 10;
       pdf.setFontSize(11);
-      pdf.text("Tiles Code: ____________________________________", 20, boxY + 10);
-      pdf.text("Location Areas: _________________________________", 20, boxY + 20);
+      pdf.text("Tiles Code: ____________________________", 15, 15);
+      pdf.text("Location Area: _________________________", 140, 15);
 
-      // Footer
+      const height = 190 * (canvas.height / canvas.width);
+      pdf.addImage(imgData, "PNG", 15, 25, 277, height);
+
+      const layoutRealWidth = convert(rawRoomLength, unit) / 1000;
+      const scaleRatio = Math.floor(250 / layoutRealWidth);
       pdf.setFontSize(10);
-      pdf.text("Generated by www.tilecalhub.com", 105, 290, { align: "center" });
+      pdf.text(`Scale 1:${scaleRatio} (${unit})`, 250, 25 + height + 8);
+      pdf.text("www.tilecalhub.com", 277, 200, { align: "right" });
 
       pdf.save("tile-layout-plan.pdf");
     }
+
+    unitSelect.addEventListener('change', drawCanvas);
+    drawCanvas();
   </script>
 </body>
 </html>
