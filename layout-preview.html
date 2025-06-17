@@ -82,7 +82,12 @@
         }
       }
 
-      if (layoutPattern === 'straight') drawStraight();
+      
+    if (layoutPattern === 'straight') drawStraight();
+    else if (layoutPattern === 'offset') drawOffset();
+    else if (layoutPattern === 'diagonal') drawDiagonal();
+    else if (layoutPattern === 'herringbone') drawHerringbone();
+    
 
       const layoutRealWidth = roomLength / 1000;
       const scaleRatio = Math.floor(250 / layoutRealWidth);
