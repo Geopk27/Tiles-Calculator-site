@@ -13,17 +13,11 @@
     </header>
 
     <section class="bg-white p-6 shadow rounded-xl space-y-4">
-      <div class="text-center space-x-4">
-        <label>PDF Orientation:</label>
+      <div class="text-center">
+        <label class="mr-2">PDF Orientation:</label>
         <select id="orientationSelect" class="p-2 border rounded">
           <option value="l">Landscape</option>
           <option value="p">Portrait</option>
-        </select>
-        <label>Units:</label>
-        <select id="unitSelect" class="p-2 border rounded">
-          <option value="mm">mm</option>
-          <option value="cm">cm</option>
-          <option value="inch">inch</option>
         </select>
       </div>
       <div class="w-full border bg-white mb-4 flex justify-center items-center overflow-auto rounded relative">
@@ -47,9 +41,7 @@
     const rawTileLength = parseFloat(localStorage.getItem('tileLength')) || 600;
     const rawTileWidth = parseFloat(localStorage.getItem('tileWidth')) || 600;
     const layoutPattern = localStorage.getItem('layoutPattern') || 'straight';
-
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
+    const unit = localStorage.getItem('unit') || 'mm';
 
     function convert(value, unit) {
       if (unit === 'cm') return value / 10;
@@ -57,11 +49,10 @@
       return value;
     }
 
-    const unitSelect = document.getElementById('unitSelect');
-    const orientationSelect = document.getElementById('orientationSelect');
-
     function drawCanvas() {
-      const unit = unitSelect.value;
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+
       const roomLength = convert(rawRoomLength, unit);
       const roomWidth = convert(rawRoomWidth, unit);
       const tileLength = convert(rawTileLength, unit);
@@ -92,17 +83,19 @@
       }
 
       if (layoutPattern === 'straight') drawStraight();
-      // Other patterns can be added here (offset, diagonal, etc.)
 
-      const scaleLabel = `Scale 1:${Math.floor(250 / (roomLength / 1000))} (${unit})`;
-      ctx.fillText(scaleLabel, canvasWidth - 160, canvasHeight - 10);
+      const layoutRealWidth = roomLength / 1000;
+      const scaleRatio = Math.floor(250 / layoutRealWidth);
+      const scaleLabel = `Scale 1:${scaleRatio} (${unit})`;
+
+      ctx.font = 'bold 12px Arial';
+      ctx.fillStyle = '#333';
+      ctx.fillText(scaleLabel, 10, canvas.height - 10);
     }
 
     function downloadPDF() {
       const { jsPDF } = window.jspdf;
-      const orientation = orientationSelect.value;
-      const unit = unitSelect.value;
-
+      const orientation = document.getElementById("orientationSelect").value;
       const pdf = new jsPDF(orientation, "mm", "a4");
       const imgData = canvas.toDataURL("image/png");
 
@@ -116,13 +109,12 @@
       const layoutRealWidth = convert(rawRoomLength, unit) / 1000;
       const scaleRatio = Math.floor(250 / layoutRealWidth);
       pdf.setFontSize(10);
-      pdf.text(`Scale 1:${scaleRatio} (${unit})`, 250, 25 + height + 8);
+      pdf.text(`Scale 1:${scaleRatio} (${unit})`, 15, 25 + height + 8);
       pdf.text("www.tilecalhub.com", 277, 200, { align: "right" });
 
       pdf.save("tile-layout-plan.pdf");
     }
 
-    unitSelect.addEventListener('change', drawCanvas);
     drawCanvas();
   </script>
 </body>
