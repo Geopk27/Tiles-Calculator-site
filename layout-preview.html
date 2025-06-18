@@ -9,7 +9,7 @@
   <div class="container mx-auto p-6 space-y-6">
     <header class="text-center">
       <h1 class="text-2xl font-bold">Your Tile Layout Plan</h1>
-      <p class="text-gray-500">Tiles drawn to scale with selected layout pattern.</p>
+      <p class="text-gray-500">Preview of how tiles will be arranged with chosen pattern and shape.</p>
     </header>
 
     <section class="bg-white p-6 shadow rounded-xl space-y-4">
@@ -20,10 +20,12 @@
           <option value="p">Portrait</option>
         </select>
       </div>
+
       <div class="w-full border bg-white mb-4 flex justify-center items-center overflow-auto rounded relative">
         <canvas id="tileCanvas" width="800" height="500" class="bg-white border shadow"></canvas>
         <div class="absolute bottom-2 right-2 text-gray-300 text-sm font-semibold pointer-events-none">www.tilecalhub.com</div>
       </div>
+
       <div class="text-center space-y-2">
         <p class="text-sm text-gray-600 italic">*This layout is for reference only. Please verify on-site before tile laying.</p>
         <button onclick="downloadPDF()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Download as PDF</button>
@@ -36,33 +38,13 @@
     const canvas = document.getElementById('tileCanvas');
     const ctx = canvas.getContext('2d');
 
-    const rawRoomLength = parseFloat(localStorage.getItem('roomLength'));
-    const rawRoomWidth = parseFloat(localStorage.getItem('roomWidth'));
-    const rawTileLength = parseFloat(localStorage.getItem('tileLength'));
-    const rawTileWidth = parseFloat(localStorage.getItem('tileWidth'));
+    const rawRoomLength = parseFloat(localStorage.getItem('roomLength')) || 4000;
+    const rawRoomWidth = parseFloat(localStorage.getItem('roomWidth')) || 3000;
+    const rawTileLength = parseFloat(localStorage.getItem('tileLength')) || 600;
+    const rawTileWidth = parseFloat(localStorage.getItem('tileWidth')) || 600;
     const layoutPattern = localStorage.getItem('layoutPattern') || 'straight';
     const unit = localStorage.getItem('unit') || 'mm';
-
-    console.log({
-      roomLength: rawRoomLength,
-      roomWidth: rawRoomWidth,
-      tileLength: rawTileLength,
-      tileWidth: rawTileWidth,
-      layoutPattern,
-      unit
-    });
-
-    if (
-      !rawRoomLength || !rawRoomWidth ||
-      !rawTileLength || !rawTileWidth ||
-      isNaN(rawRoomLength) || isNaN(rawRoomWidth) ||
-      isNaN(rawTileLength) || isNaN(rawTileWidth)
-    ) {
-      alert("Missing room or tile info. Please go back to Tile Calculator and enter your dimensions.");
-      document.getElementById("tileCanvas").style.display = "none";
-    } else {
-      drawCanvas();
-    }
+    const tileShape = localStorage.getItem('tileShape') || 'square';
 
     function convert(value, unit) {
       if (unit === 'cm') return value / 10;
@@ -97,9 +79,21 @@
 
       ctx.fillStyle = "#000";
       ctx.font = "12px Arial";
-      ctx.fillText(`Room: ${rawRoomLength}${unit} x ${rawRoomWidth}${unit}`, offsetX + 10, offsetY - 10);
+      ctx.fillText(`Area: ${rawRoomLength}${unit} x ${rawRoomWidth}${unit}`, offsetX + 10, offsetY - 10);
 
-      
+      function drawStraight() {
+        for (let y = 0; y < tilesY; y++) {
+          for (let x = 0; x < tilesX; x++) {
+            const px = offsetX + x * tileLength * scaleX;
+            const py = offsetY + y * tileWidth * scaleY;
+            const w = tileLength * scaleX;
+            const h = tileWidth * scaleY;
+            ctx.strokeRect(px, py, w, h);
+            ctx.fillText(tileNumber++, px + w / 2 - 5, py + h / 2 + 4);
+          }
+        }
+      }
+
       function drawOffset() {
         for (let y = 0; y < tilesY; y++) {
           const offset = (y % 2) * tileLength * scaleX / 2;
@@ -149,24 +143,11 @@
           }
         }
       }
-function drawStraight() {
-        for (let y = 0; y < tilesY; y++) {
-          for (let x = 0; x < tilesX; x++) {
-            const px = offsetX + x * tileLength * scaleX;
-            const py = offsetY + y * tileWidth * scaleY;
-            const w = tileLength * scaleX;
-            const h = tileWidth * scaleY;
-            ctx.strokeStyle = "#000";
-            ctx.strokeRect(px, py, w, h);
-            ctx.fillText(tileNumber++, px + w / 2 - 5, py + h / 2 + 4);
-          }
-        }
-      }
 
       if (layoutPattern === "straight") drawStraight();
-else if (layoutPattern === "offset") drawOffset();
-else if (layoutPattern === "diagonal") drawDiagonal();
-else if (layoutPattern === "herringbone") drawHerringbone();
+      else if (layoutPattern === "offset") drawOffset();
+      else if (layoutPattern === "diagonal") drawDiagonal();
+      else if (layoutPattern === "herringbone") drawHerringbone();
 
       const scaleRatio = Math.floor(250 / (roomLength / 1000));
       ctx.font = 'bold 11px Arial';
@@ -178,18 +159,20 @@ else if (layoutPattern === "herringbone") drawHerringbone();
       const orient = document.getElementById("orientationSelect").value;
       const pdf = new jsPDF(orient, "mm", "a4");
       const imgData = canvas.toDataURL("image/png");
+      const contentW = 210 - 30;
+      const drawH = contentW * (canvas.height / canvas.width);
+      const scaleRatio = Math.floor(250 / (convert(rawRoomLength, unit) / 1000));
       pdf.setFontSize(11);
       pdf.text("Tiles Code: ______________________", 15, 15);
       pdf.text("Location Area: ___________________", 140, 15);
-      const contentW = 210 - 30;
-      const drawH = contentW * (canvas.height / canvas.width);
       pdf.addImage(imgData, "PNG", 15, 25, contentW, drawH);
-      const scaleRatio = Math.floor(250 / (convert(rawRoomLength, unit) / 1000));
       pdf.setFontSize(10);
       pdf.text(`Scale 1:${scaleRatio} (${unit})`, 15, 25 + drawH + 8);
       pdf.text("www.tilecalhub.com", 195, 200, { align: "right" });
       pdf.save("tile-layout-plan.pdf");
     }
+
+    window.onload = drawCanvas;
   </script>
 </body>
 </html>

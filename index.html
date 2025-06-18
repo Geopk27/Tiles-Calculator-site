@@ -1,108 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Tile Calculator</title>
+  <meta charset="UTF-8">
+  <title>TileCalHub</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .pattern-img { max-width: 100px; border: 1px solid #ccc; border-radius: 0.5rem; }
+    .pattern-label { font-size: 0.875rem; color: #555; text-align: center; margin-top: 0.5rem; }
+  </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
-  <nav class="bg-white shadow p-4">
-    <div class="container mx-auto flex justify-between items-center">
-      <div class="text-xl font-bold">TileCalHub</div>
-      <div class="space-x-4">
-        <a href="index.html" class="hover:underline">Home</a>
-        <a href="#calculator" class="hover:underline">Tile Calculator</a>
-        <a href="layout-preview.html" class="hover:underline">Layout Preview</a>
-        <a href="tile-tips/index.html" class="hover:underline">Tile Tips & Ideas</a>
-      </div>
-    </div>
-  </nav>
 
-  <div class="flex container mx-auto py-6 space-x-4">
-    <div class="hidden lg:block w-32">
-      <div class="bg-gray-200 h-96 flex items-center justify-center text-xs text-gray-500 rounded">[ Ad Left ]</div>
-    </div>
-
-    <main class="flex-1 bg-white p-6 rounded shadow space-y-6">
-      <h1 class="text-2xl font-semibold">Tile Calculator</h1>
-      <section id="calculator" class="space-y-4">
-        <div class="mb-4">
-          <label class="block text-sm font-medium">Select Unit:</label>
-          <select id="unitSelect" class="w-full border p-2 rounded">
-            <option value="mm">Millimeter (mm)</option>
-            <option value="cm">Centimeter (cm)</option>
-            <option value="inch">Inch (in)</option>
-          </select>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div><label>Room Length</label><input type="number" id="roomLength" class="w-full p-2 border rounded"></div>
-          <div><label>Room Width</label><input type="number" id="roomWidth" class="w-full p-2 border rounded"></div>
-          <div><label>Tile Length</label><input type="number" id="tileLength" class="w-full p-2 border rounded"></div>
-          <div><label>Tile Width</label><input type="number" id="tileWidth" class="w-full p-2 border rounded"></div>
-          <div><label>Wastage Buffer (%)</label><input type="number" id="buffer" class="w-full p-2 border rounded" value="10"></div>
-          <div>
-            <label>Tile Layout Pattern</label>
-            <select id="pattern" class="w-full border p-2 rounded">
-              <option value="straight">Straight</option>
-              <option value="offset">Offset</option>
-              <option value="diagonal">Diagonal</option>
-              <option value="herringbone">Herringbone</option>
-            </select>
-          </div>
-        </div>
-        <button onclick="calculateTiles()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Calculate</button>
-        <div id="result" class="pt-4 space-y-2 text-lg"></div>
-        <button id="previewBtn" onclick="goToPreview()" class="bg-green-600 text-white px-4 py-2 rounded hidden">Preview Layout Plan</button>
-      </section>
-    </main>
-
-    <div class="hidden lg:block w-32">
-      <div class="bg-gray-200 h-96 flex items-center justify-center text-xs text-gray-500 rounded">[ Ad Right ]</div>
+<nav class="bg-white shadow p-4">
+  <div class="container mx-auto flex justify-between items-center">
+    <div class="text-xl font-bold">TileCalHub</div>
+    <div class="space-x-4">
+      <a href="index.html" class="hover:underline">Home</a>
+      <a href="#calculator" class="hover:underline">Tile Calculator</a>
+      <a href="tile-tips/index.html" class="hover:underline">Tile Tips & Ideas</a>
     </div>
   </div>
+</nav>
 
-  <footer class="bg-white border-t p-4 text-center text-sm space-y-2">
-    <div class="space-x-3">
-      <span>📧 hello@tilecalhub.com</span>
-      <span>📷 IG</span>
-      <span>📘 FB</span>
-      <span>🎵 TikTok</span>
-      <span>🍋 Lemon8</span>
-      <span>🧧 Xiaohongshu</span>
+<main class="container mx-auto py-6 px-4 space-y-6">
+  <section id="calculator" class="bg-white p-6 rounded shadow space-y-4">
+    <h1 class="text-2xl font-bold">Tile Calculator</h1>
+
+    <div>
+      <label class="block text-sm font-medium">Tile Shape:</label>
+      <select id="tileShape" class="w-full border p-2 rounded">
+        <option value="square">Square</option>
+        <option value="rectangle">Rectangle</option>
+        <option value="plank">Plank</option>
+      </select>
     </div>
-    <p>© 2025 TileCalHub. All rights reserved.</p>
-  </footer>
 
-  <script>
-    function calculateTiles() {
-      const roomLength = parseFloat(document.getElementById('roomLength').value);
-      const roomWidth = parseFloat(document.getElementById('roomWidth').value);
-      const tileLength = parseFloat(document.getElementById('tileLength').value);
-      const tileWidth = parseFloat(document.getElementById('tileWidth').value);
-      const buffer = parseFloat(document.getElementById('buffer').value);
-      const pattern = document.getElementById('pattern').value;
-      const unit = document.getElementById('unitSelect').value;
+    <div>
+      <label class="block text-sm font-medium">Select Unit:</label>
+      <select id="unitSelect" class="w-full border p-2 rounded">
+        <option value="mm">Millimeter (mm)</option>
+        <option value="cm">Centimeter (cm)</option>
+        <option value="inch">Inch (in)</option>
+      </select>
+    </div>
 
-      const totalTiles = Math.ceil((roomLength * roomWidth) / (tileLength * tileWidth));
-      const withBuffer = Math.ceil(totalTiles * (1 + buffer / 100));
+    <div class="grid grid-cols-2 gap-4">
+      <div><label>Area Length</label><input type="number" id="roomLength" class="w-full p-2 border rounded"></div>
+      <div><label>Area Width</label><input type="number" id="roomWidth" class="w-full p-2 border rounded"></div>
+      <div><label>Tile Length</label><input type="number" id="tileLength" class="w-full p-2 border rounded"></div>
+      <div><label>Tile Width</label><input type="number" id="tileWidth" class="w-full p-2 border rounded"></div>
+      <div><label>Wastage Buffer (%)</label><input type="number" id="buffer" class="w-full p-2 border rounded" value="10"></div>
+      <div>
+        <label>Tile Layout Pattern</label>
+        <select id="pattern" class="w-full border p-2 rounded">
+          <option value="straight">Straight</option>
+          <option value="offset">Offset</option>
+          <option value="diagonal">Diagonal</option>
+          <option value="herringbone">Herringbone</option>
+        </select>
+      </div>
+    </div>
 
-      localStorage.setItem('roomLength', roomLength);
-      localStorage.setItem('roomWidth', roomWidth);
-      localStorage.setItem('tileLength', tileLength);
-      localStorage.setItem('tileWidth', tileWidth);
-      localStorage.setItem('layoutPattern', pattern);
-      localStorage.setItem('unit', unit);
+    <button onclick="calculateTiles()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Calculate</button>
 
-      document.getElementById('result').innerHTML = `
-        <p>Total Tiles Needed: <strong>${totalTiles}</strong></p>
-        <p>With Buffer: <strong>${withBuffer}</strong></p>
-      `;
-      document.getElementById('previewBtn').classList.remove('hidden');
-    }
+    <div id="result" class="pt-4 space-y-2 text-lg"></div>
 
-    function goToPreview() {
-      window.location.href = 'layout-preview.html';
-    }
-  </script>
+    <p class="text-sm text-gray-500 italic">
+      Disclaimer: TileCalHub shall not be held responsible for any deviations or issues on costings and calculations that arise from usage of these tools. They should be used as working reference & guidelines and may not include all external factors affecting final results in your project.
+    </p>
+
+    <button id="previewBtn" onclick="goToPreview()" class="bg-green-600 text-white px-4 py-2 rounded hidden">Preview Layout Plan</button>
+
+    <div id="patternGallery" class="grid grid-cols-2 md:grid-cols-3 gap-6 mt-8">
+      <div><img src="square.jpg" class="pattern-img"><div class="pattern-label">Straight (Square)</div></div>
+      <div><img src="rectangle.jpg" class="pattern-img"><div class="pattern-label">Offset (Rectangle)</div></div>
+      <div><img src="plank.jpg" class="pattern-img"><div class="pattern-label">Herringbone (Plank)</div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="bg-white border-t p-4 text-center text-sm space-y-2">
+  <div class="space-x-3">
+    <span>📧 hello@tilecalhub.com</span>
+    <span>📷 IG</span>
+    <span>📘 FB</span>
+    <span>🎵 TikTok</span>
+    <span>🍋 Lemon8</span>
+    <span>🧧 Xiaohongshu</span>
+  </div>
+  <p>© 2025 TileCalHub. All rights reserved.</p>
+</footer>
+
+<script>
+  function calculateTiles() {
+    const roomLength = parseFloat(document.getElementById('roomLength').value);
+    const roomWidth = parseFloat(document.getElementById('roomWidth').value);
+    const tileLength = parseFloat(document.getElementById('tileLength').value);
+    const tileWidth = parseFloat(document.getElementById('tileWidth').value);
+    const buffer = parseFloat(document.getElementById('buffer').value);
+    const pattern = document.getElementById('pattern').value;
+    const unit = document.getElementById('unitSelect').value;
+    const shape = document.getElementById('tileShape').value;
+
+    const totalTiles = Math.ceil((roomLength * roomWidth) / (tileLength * tileWidth));
+    const withBuffer = Math.ceil(totalTiles * (1 + buffer / 100));
+
+    localStorage.setItem('roomLength', roomLength);
+    localStorage.setItem('roomWidth', roomWidth);
+    localStorage.setItem('tileLength', tileLength);
+    localStorage.setItem('tileWidth', tileWidth);
+    localStorage.setItem('layoutPattern', pattern);
+    localStorage.setItem('unit', unit);
+    localStorage.setItem('tileShape', shape);
+
+    document.getElementById('result').innerHTML = `
+      <p>Total Tiles Needed: <strong>${totalTiles}</strong></p>
+      <p>With Buffer: <strong>${withBuffer}</strong></p>
+    `;
+    document.getElementById('previewBtn').classList.remove('hidden');
+  }
+
+  function goToPreview() {
+    window.location.href = 'layout-preview.html';
+  }
+</script>
 </body>
 </html>
