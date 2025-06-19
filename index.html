@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8"/>
   <title>TileCalHub</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    .pattern-img { max-width: 100px; border: 1px solid #ccc; border-radius: 0.5rem; }
-    .pattern-label { font-size: 0.875rem; color: #555; text-align: center; margin-top: 0.5rem; }
-  </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
@@ -22,17 +18,17 @@
   </div>
 </nav>
 
-<main class="container mx-auto py-6 px-4 space-y-6">
-  <section id="calculator" class="bg-white p-6 rounded shadow space-y-4">
+<div class="flex container mx-auto py-6 space-x-4">
+  <aside class="hidden lg:block w-40">
+    <img src="https://via.placeholder.com/160x600?text=Sidebar+Ad" alt="[Ad]" class="rounded shadow"/>
+  </aside>
+
+  <main id="calculator" class="flex-1 bg-white p-6 rounded shadow space-y-6">
     <h1 class="text-2xl font-bold">Tile Calculator</h1>
 
     <div>
       <label class="block text-sm font-medium">Tile Shape:</label>
-      <select id="tileShape" class="w-full border p-2 rounded">
-        <option value="square">Square</option>
-        <option value="rectangle">Rectangle</option>
-        <option value="plank">Plank</option>
-      </select>
+      <select id="tileShape" class="w-full border p-2 rounded"></select>
     </div>
 
     <div>
@@ -45,39 +41,30 @@
     </div>
 
     <div class="grid grid-cols-2 gap-4">
-      <div><label>Area Length</label><input type="number" id="roomLength" class="w-full p-2 border rounded"></div>
-      <div><label>Area Width</label><input type="number" id="roomWidth" class="w-full p-2 border rounded"></div>
-      <div><label>Tile Length</label><input type="number" id="tileLength" class="w-full p-2 border rounded"></div>
-      <div><label>Tile Width</label><input type="number" id="tileWidth" class="w-full p-2 border rounded"></div>
-      <div><label>Wastage Buffer (%)</label><input type="number" id="buffer" class="w-full p-2 border rounded" value="10"></div>
-      <div>
-        <label>Tile Layout Pattern</label>
-        <select id="pattern" class="w-full border p-2 rounded">
-          <option value="straight">Straight</option>
-          <option value="offset">Offset</option>
-          <option value="diagonal">Diagonal</option>
-          <option value="herringbone">Herringbone</option>
-        </select>
-      </div>
+      <div><label>Area Length</label><input type="number" id="roomLength" class="w-full p-2 border rounded"/></div>
+      <div><label>Area Width</label><input type="number" id="roomWidth" class="w-full p-2 border rounded"/></div>
+      <div><label>Tile Length</label><input type="number" id="tileLength" class="w-full p-2 border rounded"/></div>
+      <div><label>Tile Width</label><input type="number" id="tileWidth" class="w-full p-2 border rounded"/></div>
+      <div><label>Wastage Buffer (%)</label><input type="number" id="buffer" class="w-full p-2 border rounded" value="10"/></div>
     </div>
+
+    <div id="patternGallery" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
 
     <button onclick="calculateTiles()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Calculate</button>
 
-    <div id="result" class="pt-4 space-y-2 text-lg"></div>
+    <div id="result" class="pt-4 text-lg"></div>
 
     <p class="text-sm text-gray-500 italic">
       Disclaimer: TileCalHub shall not be held responsible for any deviations or issues on costings and calculations that arise from usage of these tools. They should be used as working reference & guidelines and may not include all external factors affecting final results in your project.
     </p>
 
     <button id="previewBtn" onclick="goToPreview()" class="bg-green-600 text-white px-4 py-2 rounded hidden">Preview Layout Plan</button>
+  </main>
 
-    <div id="patternGallery" class="grid grid-cols-2 md:grid-cols-3 gap-6 mt-8">
-      <div><img src="square.jpg" class="pattern-img"><div class="pattern-label">Straight (Square)</div></div>
-      <div><img src="rectangle.jpg" class="pattern-img"><div class="pattern-label">Offset (Rectangle)</div></div>
-      <div><img src="plank.jpg" class="pattern-img"><div class="pattern-label">Herringbone (Plank)</div></div>
-    </div>
-  </section>
-</main>
+  <aside class="hidden lg:block w-40">
+    <img src="https://via.placeholder.com/160x600?text=Sidebar+Ad" alt="[Ad]" class="rounded shadow"/>
+  </aside>
+</div>
 
 <footer class="bg-white border-t p-4 text-center text-sm space-y-2">
   <div class="space-x-3">
@@ -91,38 +78,6 @@
   <p>© 2025 TileCalHub. All rights reserved.</p>
 </footer>
 
-<script>
-  function calculateTiles() {
-    const roomLength = parseFloat(document.getElementById('roomLength').value);
-    const roomWidth = parseFloat(document.getElementById('roomWidth').value);
-    const tileLength = parseFloat(document.getElementById('tileLength').value);
-    const tileWidth = parseFloat(document.getElementById('tileWidth').value);
-    const buffer = parseFloat(document.getElementById('buffer').value);
-    const pattern = document.getElementById('pattern').value;
-    const unit = document.getElementById('unitSelect').value;
-    const shape = document.getElementById('tileShape').value;
-
-    const totalTiles = Math.ceil((roomLength * roomWidth) / (tileLength * tileWidth));
-    const withBuffer = Math.ceil(totalTiles * (1 + buffer / 100));
-
-    localStorage.setItem('roomLength', roomLength);
-    localStorage.setItem('roomWidth', roomWidth);
-    localStorage.setItem('tileLength', tileLength);
-    localStorage.setItem('tileWidth', tileWidth);
-    localStorage.setItem('layoutPattern', pattern);
-    localStorage.setItem('unit', unit);
-    localStorage.setItem('tileShape', shape);
-
-    document.getElementById('result').innerHTML = `
-      <p>Total Tiles Needed: <strong>${totalTiles}</strong></p>
-      <p>With Buffer: <strong>${withBuffer}</strong></p>
-    `;
-    document.getElementById('previewBtn').classList.remove('hidden');
-  }
-
-  function goToPreview() {
-    window.location.href = 'layout-preview.html';
-  }
-</script>
+<script src="js/tilecalhub.js"></script>
 </body>
 </html>
